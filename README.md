@@ -6,7 +6,7 @@
 - **Release**: `satellite-system v1.0.0`
 - **下载链接**: https://github.com/Ning123321-make/didactic-eureka/releases/download/satellite-system-v1.0.0/satellite-system.zip
 - **SHA256**: `4a08aaffd751baa9fd9db2057953816912769fb28bed42592b23be4d853c94d0`
-- **大小**: `37800` bytes
+- **大小**: `29780` bytes
 
 > 若需校验，请运行 `sha256sum satellite-system.zip` 并比对上面的 SHA256。
 
