@@ -295,13 +295,36 @@
             const now = new Date();
             const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
 
-            const history = db.getTelemetryHistory(currentSatelliteId, thirtyMinutesAgo.toISOString(), now.toISOString());
+            // 转换为与数据库中存储的格式一致的时间字符串
+            const formatDateTime = (date) => {
+                return date.getFullYear() + '-' +
+                       String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                       String(date.getDate()).padStart(2, '0') + ' ' +
+                       String(date.getHours()).padStart(2, '0') + ':' +
+                       String(date.getMinutes()).padStart(2, '0') + ':' +
+                       String(date.getSeconds()).padStart(2, '0');
+            };
 
-            if (history.length === 0) return;
+            const startTimeStr = formatDateTime(thirtyMinutesAgo);
+            const endTimeStr = formatDateTime(now);
+
+            console.log('Querying telemetry history:', currentSatelliteId, startTimeStr, endTimeStr);
+
+            const history = db.getTelemetryHistory(currentSatelliteId, startTimeStr, endTimeStr);
+
+            console.log('Retrieved history data:', history.length, 'records');
+
+            if (history.length === 0) {
+                console.log('No historical data found for chart, clearing chart');
+                trendChart.setOption({ series: [] });
+                return;
+            }
 
             const times = history.map(h => h.timestamp.split(' ')[1]); // 只显示时间
             const temperatures = history.map(h => h.temperature);
             const batteries = history.map(h => h.battery);
+
+            console.log('Chart data - times:', times.length, 'temperatures:', temperatures.length, 'batteries:', batteries.length);
 
             const option = {
                 tooltip: {
@@ -334,19 +357,21 @@
                         type: 'line',
                         yAxisIndex: 0,
                         data: temperatures,
-                        itemStyle: { color: '#ff4d4f' }
+                        itemStyle: { color: '#ff4d4f' },
+                        smooth: true
                     },
                     {
                         name: '电量 (%)',
                         type: 'line',
                         yAxisIndex: 1,
                         data: batteries,
-                        itemStyle: { color: '#52c41a' }
+                        itemStyle: { color: '#52c41a' },
+                        smooth: true
                     }
                 ]
             };
 
-            trendChart.setOption(option);
+            trendChart.setOption(option, true); // true表示不合并，完全替换配置
         }
 
         // 页面卸载时清理定时器

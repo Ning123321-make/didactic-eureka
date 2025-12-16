@@ -104,11 +104,27 @@ class MockDatabase {
     }
 
     getTelemetryHistory(satelliteId, startTime, endTime) {
-        return this.getTelemetry().filter(t =>
-            t.satelliteId === satelliteId &&
-            new Date(t.timestamp) >= new Date(startTime) &&
-            new Date(t.timestamp) <= new Date(endTime)
-        ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        console.log('getTelemetryHistory called with:', satelliteId, startTime, endTime);
+        const allTelemetry = this.getTelemetry();
+        console.log('Total telemetry records:', allTelemetry.length);
+
+        const filtered = allTelemetry.filter(t => {
+            const matchesSatellite = t.satelliteId === satelliteId;
+            const recordTime = new Date(t.timestamp.replace(' ', 'T'));
+            const start = new Date(startTime.replace(' ', 'T'));
+            const end = new Date(endTime.replace(' ', 'T'));
+
+            const inTimeRange = recordTime >= start && recordTime <= end;
+
+            if (matchesSatellite && inTimeRange) {
+                console.log('Matching record:', t.timestamp, recordTime, start, end);
+            }
+
+            return matchesSatellite && inTimeRange;
+        });
+
+        console.log('Filtered records:', filtered.length);
+        return filtered.sort((a, b) => new Date(a.timestamp.replace(' ', 'T')) - new Date(b.timestamp.replace(' ', 'T')));
     }
 
     deleteTelemetryBySatellite(satelliteId) {
