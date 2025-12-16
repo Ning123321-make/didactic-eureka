@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>历史数据查询与导出</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-satellite"></i> 卫星信息管理系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="satellite-management.html">基础信息管理</a>
+                <a class="nav-link" href="real-time-monitoring.html">实时状态监控</a>
+                <a class="nav-link" href="command-issuance.html">指令下发</a>
+                <a class="nav-link active" href="historical-data.html">历史数据查询</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-search"></i> 历史遥测数据查询
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="queryForm">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="querySatelliteId" class="form-label">卫星编号 *</label>
+                                    <select class="form-select" id="querySatelliteId" required>
+                                        <!-- 动态生成 -->
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="queryStartTime" class="form-label">开始时间 *</label>
+                                    <input type="datetime-local" class="form-control" id="queryStartTime" required>
+                                    <div class="invalid-feedback">开始时间不能为空</div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="queryEndTime" class="form-label">结束时间 *</label>
+                                    <input type="datetime-local" class="form-control" id="queryEndTime" required>
+                                    <div class="invalid-feedback">结束时间不能早于开始时间，且跨度不超过24小时</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> 查询
+                                </button>
+                                <button type="button" class="btn btn-success" id="exportBtn" disabled onclick="exportData()">
+                                    <i class="fas fa-download"></i> 导出 CSV
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-chart-line"></i> 温度 & 电量趋势图
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <div id="historyChart" style="width: 100%; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-table"></i> 数据表格
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="dataTable">
+                                <thead>
+                                    <tr>
+                                        <th>卫星编号</th>
+                                        <th>温度(℃)</th>
+                                        <th>电量(%)</th>
+                                        <th>信号强度(dB)</th>
+                                        <th>角度(°)</th>
+                                        <th>采集时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dataTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">请先查询数据</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let historyChart = null;
+        let currentData = [];
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initSatelliteSelect();
+            initChart();
+            setupFormValidation();
+        });
+
+        // 初始化卫星选择
+        function initSatelliteSelect() {
+            const select = document.getElementById('querySatelliteId');
+            const satellites = db.getSatellites();
+
+            satellites.forEach(satellite => {
+                const option = document.createElement('option');
+                option.value = satellite.id;
+                option.textContent = `${satellite.id} - ${satellite.name}`;
+                select.appendChild(option);
+            });
+        }
+
+        // 初始化图表
+        function initChart() {
+            const chartDom = document.getElementById('historyChart');
+            historyChart = echarts.init(chartDom);
+        }
+
+        // 设置表单验证
+        function setupFormValidation() {
+            const startTimeInput = document.getElementById('queryStartTime');
+            const endTimeInput = document.getElementById('queryEndTime');
+
+            startTimeInput.addEventListener('change', validateTimeRange);
+            endTimeInput.addEventListener('change', validateTimeRange);
+
+            document.getElementById('queryForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                queryData();
+            });
+        }
+
+        // 验证时间范围
+        function validateTimeRange() {
+            const startTime = new Date(document.getElementById('queryStartTime').value);
+            const endTime = new Date(document.getElementById('queryEndTime').value);
+            const startInput = document.getElementById('queryStartTime');
+            const endInput = document.getElementById('queryEndTime');
+
+            if (startTime && endTime) {
+                if (endTime <= startTime) {
+                    endInput.classList.add('is-invalid');
+                    endInput.nextElementSibling.textContent = '结束时间不能早于开始时间';
+                } else {
+                    const diffHours = (endTime - startTime) / (1000 * 60 * 60);
+                    if (diffHours > 24) {
+                        endInput.classList.add('is-invalid');
+                        endInput.nextElementSibling.textContent = '时间跨度不能超过24小时';
+                    } else {
+                        endInput.classList.remove('is-invalid');
+                        startInput.classList.remove('is-invalid');
+                    }
+                }
+            }
+        }
+
+        // 查询数据
+        function queryData() {
+            const form = document.getElementById('queryForm');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+
+            const satelliteId = document.getElementById('querySatelliteId').value;
+            const startTime = document.getElementById('queryStartTime').value.replace('T', ' ');
+            const endTime = document.getElementById('queryEndTime').value.replace('T', ' ');
+
+            currentData = db.getTelemetryHistory(satelliteId, startTime, endTime);
+
+            if (currentData.length === 0) {
+                showAlert('查询时间段内无数据', 'warning');
+                document.getElementById('dataTableBody').innerHTML = '<tr><td colspan="6" class="text-center text-muted">暂无数据</td></tr>';
+                document.getElementById('exportBtn').disabled = true;
+                historyChart.setOption({ series: [] });
+                return;
+            }
+
+            renderDataTable(currentData);
+            updateChart(currentData);
+            document.getElementById('exportBtn').disabled = false;
+        }
+
+        // 渲染数据表格
+        function renderDataTable(data) {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.satelliteId}</td>
+                    <td>${item.temperature.toFixed(1)}</td>
+                    <td>${item.battery}</td>
+                    <td>${Math.round(item.signalStrength)}</td>
+                    <td>${item.angle.toFixed(1)}</td>
+                    <td>${item.timestamp}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 更新图表
+        function updateChart(data) {
+            const times = data.map(d => d.timestamp.split(' ')[1]); // 只显示时间
+            const temperatures = data.map(d => d.temperature);
+            const batteries = data.map(d => d.battery);
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['温度 (°C)', '电量 (%)']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: times
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '温度 (°C)',
+                        min: -20,
+                        max: 60
+                    },
+                    {
+                        type: 'value',
+                        name: '电量 (%)',
+                        min: 0,
+                        max: 100
+                    }
+                ],
+                series: [
+                    {
+                        name: '温度 (°C)',
+                        type: 'line',
+                        yAxisIndex: 0,
+                        data: temperatures,
+                        itemStyle: { color: '#ff4d4f' }
+                    },
+                    {
+                        name: '电量 (%)',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: batteries,
+                        itemStyle: { color: '#52c41a' }
+                    }
+                ]
+            };
+
+            historyChart.setOption(option);
+        }
+
+        // 导出数据
+        function exportData() {
+            if (currentData.length === 0) {
+                showAlert('没有数据可导出', 'warning');
+                return;
+            }
+
+            const satelliteId = document.getElementById('querySatelliteId').value;
+            const startTime = document.getElementById('queryStartTime').value;
+            const endTime = document.getElementById('queryEndTime').value;
+
+            const filename = `${satelliteId}_${startTime.replace(/[-:]/g, '').substring(0, 12)}_${endTime.replace(/[-:]/g, '').substring(0, 12)}.csv`;
+
+            const csvData = currentData.map(item => ({
+                '卫星编号': item.satelliteId,
+                '温度(℃)': item.temperature.toFixed(1),
+                '电量(%)': item.battery,
+                '信号强度(dB)': Math.round(item.signalStrength),
+                '角度(°)': item.angle.toFixed(1),
+                '采集时间': item.timestamp
+            }));
+
+            exportToCSV(csvData, filename);
+            showAlert('文件已导出，保存至默认下载文件夹');
+        }
+    </script>
+</body>
+</html>

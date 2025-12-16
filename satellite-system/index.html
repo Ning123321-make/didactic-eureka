@@ -3,51 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>卫星信息管理系统 - 登录</title>
+    <title>卫星信息管理系统</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
-    <style>
-        .login-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .login-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        
-        .login-header {
-            background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .login-logo {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-        
-        .login-body {
-            padding: 30px;
-        }
-        
-        .form-control {
-            border-radius: 10px;
-            padding: 12px 15px;
-            border: 2px solid #e8e8e8;
-            transition: all 0.3s;
-        }
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-satellite"></i> 卫星信息管理系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link active" href="index.html">首页</a>
+                <a class="nav-link" href="satellite-management.html">基础信息管理</a>
+                <a class="nav-link" href="real-time-monitoring.html">实时状态监控</a>
+                <a class="nav-link" href="command-issuance.html">指令下发</a>
+                <a class="nav-link" href="historical-data.html">历史数据查询</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h1 class="display-4">
+                    <i class="fas fa-satellite text-primary"></i>
+                    卫星信息管理系统
+                </h1>
+                <p class="lead text-muted">模拟小型低轨试验卫星的地面监控系统</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">卫星基础信息管理</h5>
+                        <p class="card-text">新增、查询、修改、删除卫星基础信息</p>
+                        <a href="satellite-management.html" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> 进入管理
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tachometer-alt fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">实时状态监控</h5>
+                        <p class="card-text">实时查看卫星运行状态和可视化数据</p>
+                        <a href="real-time-monitoring.html" class="btn btn-success">
+                            <i class="fas fa-arrow-right"></i> 开始监控
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-paper-plane fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">卫星指令下发</h5>
+                        <p class="card-text">下发指令并跟踪执行状态</p>
+                        <a href="command-issuance.html" class="btn btn-warning">
+                            <i class="fas fa-arrow-right"></i> 指令下发
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">历史数据查询</h5>
+                        <p class="card-text">查询历史数据并导出CSV文件</p>
+                        <a href="historical-data.html" class="btn btn-info">
+                            <i class="fas fa-arrow-right"></i> 数据查询
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle"></i> 系统说明
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>核心功能</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>卫星基础信息管理（增删改查）</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>实时状态监控（5秒自动刷新）</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>指令下发与跟踪（调整角度、休眠、唤醒）</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>历史数据查询与CSV导出</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>技术特点</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-star text-warning me-2"></i>前端原生技术栈（HTML5+CSS3+JS）</li>
+                                    <li><i class="fas fa-star text-warning me-2"></i>ECharts可视化图表</li>
+                                    <li><i class="fas fa-star text-warning me-2"></i>Bootstrap5响应式设计</li>
+                                    <li><i class="fas fa-star text-warning me-2"></i>模拟数据实时生成</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>}
         
         .form-control:focus {
             border-color: #1890ff;

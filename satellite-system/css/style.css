@@ -1,0 +1,130 @@
+/* 公共样式文件 */
+body {
+    font-family: 'Microsoft YaHei', sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 10px 30px;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(24, 144, 255, 0.4);
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e8e8e8;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 0.2rem rgba(24, 144, 255, 0.25);
+}
+
+.modal-content {
+    border-radius: 15px;
+    border: none;
+}
+
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #1890ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 仪表盘样式 */
+.gauge-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+}
+
+.angle-compass {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+    border: 5px solid #1890ff;
+}
+
+.angle-pointer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2px;
+    height: 80px;
+    background: #ff4d4f;
+    transform-origin: bottom center;
+    transform: translateX(-50%) translateY(-100%);
+    transition: transform 0.5s;
+}
+
+.satellite-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: #1890ff;
+}
+
+/* 进度条样式 */
+.progress {
+    height: 20px;
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+/* 图表容器 */
+.chart-container {
+    height: 300px;
+    margin: 20px 0;
+}

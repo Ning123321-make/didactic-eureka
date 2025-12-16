@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卫星实时状态监控</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-satellite"></i> 卫星信息管理系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="satellite-management.html">基础信息管理</a>
+                <a class="nav-link active" href="real-time-monitoring.html">实时状态监控</a>
+                <a class="nav-link" href="command-issuance.html">指令下发</a>
+                <a class="nav-link" href="historical-data.html">历史数据查询</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <label for="satelliteSelect" class="form-label fw-bold">选择卫星：</label>
+                                <select class="form-select" id="satelliteSelect">
+                                    <!-- 动态生成 -->
+                                </select>
+                            </div>
+                            <div class="col-md-9 text-end">
+                                <span class="text-muted">数据更新时间：</span>
+                                <span id="updateTime">--:--:--</span>
+                                <span class="loading ms-2" id="loadingIndicator" style="display: none;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-thermometer-half"></i> 温度
+                        </h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="display-4 fw-bold text-primary" id="temperature">--</div>
+                        <div class="text-muted">℃</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-battery-half"></i> 电量
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress mb-2">
+                            <div class="progress-bar" id="batteryBar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="text-center">
+                            <span class="fw-bold" id="batteryText">--</span>
+                            <span class="text-muted">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-signal"></i> 信号强度
+                        </h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="gauge-container">
+                            <canvas id="signalGauge" width="150" height="150"></canvas>
+                        </div>
+                        <div class="mt-2">
+                            <span class="fw-bold" id="signalText">--</span>
+                            <span class="text-muted">dB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-compass"></i> 俯仰角
+                        </h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="angle-compass">
+                            <div class="satellite-icon">
+                                <i class="fas fa-satellite"></i>
+                            </div>
+                            <div class="angle-pointer" id="anglePointer"></div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="fw-bold" id="angleText">--</span>
+                            <span class="text-muted">°</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-chart-line"></i> 温度 & 电量趋势图 (最近30分钟)
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <div id="trendChart" style="width: 100%; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let currentSatelliteId = '';
+        let trendChart = null;
+        let signalGauge = null;
+        let refreshInterval = null;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initSatelliteSelect();
+            initCharts();
+            startMonitoring();
+        });
+
+        // 初始化卫星选择下拉框
+        function initSatelliteSelect() {
+            const select = document.getElementById('satelliteSelect');
+            const satellites = db.getSatellites();
+
+            satellites.forEach(satellite => {
+                const option = document.createElement('option');
+                option.value = satellite.id;
+                option.textContent = `${satellite.id} - ${satellite.name}`;
+                select.appendChild(option);
+            });
+
+            if (satellites.length > 0) {
+                currentSatelliteId = satellites[0].id;
+                select.value = currentSatelliteId;
+            }
+
+            select.addEventListener('change', function() {
+                currentSatelliteId = this.value;
+                updateDisplay();
+            });
+        }
+
+        // 初始化图表
+        function initCharts() {
+            // 趋势图
+            const trendChartDom = document.getElementById('trendChart');
+            trendChart = echarts.init(trendChartDom);
+
+            // 信号强度仪表盘
+            const signalCanvas = document.getElementById('signalGauge');
+            signalGauge = signalCanvas.getContext('2d');
+        }
+
+        // 开始监控
+        function startMonitoring() {
+            updateDisplay(); // 立即更新一次
+            refreshInterval = setInterval(updateDisplay, 5000);
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            if (!currentSatelliteId) return;
+
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = 'inline-block';
+
+            // 模拟异步加载
+            setTimeout(() => {
+                const telemetry = db.getLatestTelemetry(currentSatelliteId);
+                if (telemetry) {
+                    updateCards(telemetry);
+                    updateCharts();
+                }
+                document.getElementById('updateTime').textContent = new Date().toLocaleTimeString();
+                loadingIndicator.style.display = 'none';
+            }, 500);
+        }
+
+        // 更新卡片数据
+        function updateCards(data) {
+            // 温度
+            document.getElementById('temperature').textContent = data.temperature.toFixed(1);
+
+            // 电量
+            const batteryBar = document.getElementById('batteryBar');
+            const batteryText = document.getElementById('batteryText');
+            const batteryPercent = data.battery;
+            batteryBar.style.width = `${batteryPercent}%`;
+            batteryText.textContent = batteryPercent;
+
+            // 电量颜色
+            batteryBar.className = 'progress-bar';
+            if (batteryPercent < 20) {
+                batteryBar.classList.add('bg-danger');
+            } else if (batteryPercent < 50) {
+                batteryBar.classList.add('bg-warning');
+            } else {
+                batteryBar.classList.add('bg-success');
+            }
+
+            // 信号强度
+            document.getElementById('signalText').textContent = Math.round(data.signalStrength);
+            drawSignalGauge(data.signalStrength);
+
+            // 角度
+            document.getElementById('angleText').textContent = data.angle.toFixed(1);
+            updateAngleCompass(data.angle);
+        }
+
+        // 绘制信号强度仪表盘
+        function drawSignalGauge(value) {
+            const canvas = document.getElementById('signalGauge');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 60;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 背景圆
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 10;
+            ctx.stroke();
+
+            // 进度弧
+            const angle = (value / 100) * 2 * Math.PI - Math.PI / 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, -Math.PI / 2, angle);
+            ctx.strokeStyle = value < 20 ? '#dc3545' : value < 50 ? '#ffc107' : '#28a745';
+            ctx.lineWidth = 10;
+            ctx.stroke();
+
+            // 指针
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius);
+            ctx.strokeStyle = '#1890ff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // 中心点
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1890ff';
+            ctx.fill();
+        }
+
+        // 更新角度罗盘
+        function updateAngleCompass(angle) {
+            const pointer = document.getElementById('anglePointer');
+            const rotation = angle + 90; // 0°对应正北，90°对应正东
+            pointer.style.transform = `translateX(-50%) translateY(-100%) rotate(${rotation}deg)`;
+        }
+
+        // 更新趋势图
+        function updateCharts() {
+            const now = new Date();
+            const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
+
+            const history = db.getTelemetryHistory(currentSatelliteId, thirtyMinutesAgo.toISOString(), now.toISOString());
+
+            if (history.length === 0) return;
+
+            const times = history.map(h => h.timestamp.split(' ')[1]); // 只显示时间
+            const temperatures = history.map(h => h.temperature);
+            const batteries = history.map(h => h.battery);
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['温度 (°C)', '电量 (%)']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: times
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '温度 (°C)',
+                        min: -20,
+                        max: 60
+                    },
+                    {
+                        type: 'value',
+                        name: '电量 (%)',
+                        min: 0,
+                        max: 100
+                    }
+                ],
+                series: [
+                    {
+                        name: '温度 (°C)',
+                        type: 'line',
+                        yAxisIndex: 0,
+                        data: temperatures,
+                        itemStyle: { color: '#ff4d4f' }
+                    },
+                    {
+                        name: '电量 (%)',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: batteries,
+                        itemStyle: { color: '#52c41a' }
+                    }
+                ]
+            };
+
+            trendChart.setOption(option);
+        }
+
+        // 页面卸载时清理定时器
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

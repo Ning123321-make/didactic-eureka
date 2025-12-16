@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卫星基础信息管理</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-satellite"></i> 卫星信息管理系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="satellite-management.html">基础信息管理</a>
+                <a class="nav-link" href="real-time-monitoring.html">实时状态监控</a>
+                <a class="nav-link" href="command-issuance.html">指令下发</a>
+                <a class="nav-link" href="historical-data.html">历史数据查询</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-plus-circle"></i> 新增卫星
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="satelliteForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="satelliteId" class="form-label">卫星编号 *</label>
+                                    <input type="text" class="form-control" id="satelliteId" placeholder="SAT001" required>
+                                    <div class="invalid-feedback">卫星编号格式错误，应为 SAT+3 位数字</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="satelliteName" class="form-label">卫星名称 *</label>
+                                    <input type="text" class="form-control" id="satelliteName" placeholder="试验星 001" required>
+                                    <div class="invalid-feedback">卫星名称长度不能超过20字符</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="satelliteType" class="form-label">卫星类型 *</label>
+                                    <select class="form-select" id="satelliteType" required>
+                                        <option value="">请选择</option>
+                                        <option value="低轨遥感星">低轨遥感星</option>
+                                        <option value="通信试验星">通信试验星</option>
+                                        <option value="导航试验星">导航试验星</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="launchTime" class="form-label">发射时间 *</label>
+                                    <input type="date" class="form-control" id="launchTime" required>
+                                    <div class="invalid-feedback">发射时间不能晚于当前日期</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="orbit" class="form-label">轨道信息 *</label>
+                                    <input type="text" class="form-control" id="orbit" placeholder="500km 近地轨道" required>
+                                    <div class="invalid-feedback">轨道信息长度不能超过50字符</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="status" class="form-label">初始状态 *</label>
+                                    <select class="form-select" id="status" required>
+                                        <option value="在线">在线</option>
+                                        <option value="离线">离线</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="uplinkFreq" class="form-label">上行频率</label>
+                                    <input type="text" class="form-control" id="uplinkFreq" placeholder="145.8 MHz">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="downlinkFreq" class="form-label">下行频率</label>
+                                    <input type="text" class="form-control" id="downlinkFreq" placeholder="437.8 MHz">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="payload" class="form-label">载荷信息</label>
+                                <textarea class="form-control" id="payload" rows="3" placeholder="描述卫星的载荷信息"></textarea>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> 保存
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                    <i class="fas fa-undo"></i> 重置
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-search"></i> 卫星查询
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="searchId" placeholder="卫星编号">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="searchName" placeholder="卫星名称">
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="searchType">
+                                    <option value="">所有类型</option>
+                                    <option value="低轨遥感星">低轨遥感星</option>
+                                    <option value="通信试验星">通信试验星</option>
+                                    <option value="导航试验星">导航试验星</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary" onclick="searchSatellites()">
+                                <i class="fas fa-search"></i> 查询
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetSearch()">
+                                <i class="fas fa-undo"></i> 重置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list"></i> 卫星列表
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="satelliteTable">
+                                <thead>
+                                    <tr>
+                                        <th>卫星编号</th>
+                                        <th>卫星名称</th>
+                                        <th>卫星类型</th>
+                                        <th>发射时间</th>
+                                        <th>轨道信息</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="satelliteTableBody">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑卫星模态框 -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">编辑卫星信息</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <input type="hidden" id="editSatelliteId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editSatelliteIdDisplay" class="form-label">卫星编号</label>
+                                <input type="text" class="form-control" id="editSatelliteIdDisplay" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editSatelliteName" class="form-label">卫星名称 *</label>
+                                <input type="text" class="form-control" id="editSatelliteName" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editSatelliteType" class="form-label">卫星类型 *</label>
+                                <select class="form-select" id="editSatelliteType" required>
+                                    <option value="低轨遥感星">低轨遥感星</option>
+                                    <option value="通信试验星">通信试验星</option>
+                                    <option value="导航试验星">导航试验星</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editLaunchTime" class="form-label">发射时间 *</label>
+                                <input type="date" class="form-control" id="editLaunchTime" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editOrbit" class="form-label">轨道信息 *</label>
+                                <input type="text" class="form-control" id="editOrbit" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editStatus" class="form-label">状态 *</label>
+                                <select class="form-select" id="editStatus" required>
+                                    <option value="在线">在线</option>
+                                    <option value="离线">离线</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editUplinkFreq" class="form-label">上行频率</label>
+                                <input type="text" class="form-control" id="editUplinkFreq">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editDownlinkFreq" class="form-label">下行频率</label>
+                                <input type="text" class="form-control" id="editDownlinkFreq">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPayload" class="form-label">载荷信息</label>
+                            <textarea class="form-control" id="editPayload" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="updateSatellite()">保存修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let currentSatellites = [];
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSatellites();
+            setupFormValidation();
+        });
+
+        // 加载卫星列表
+        function loadSatellites() {
+            currentSatellites = db.getSatellites();
+            renderSatelliteTable(currentSatellites);
+        }
+
+        // 渲染卫星表格
+        function renderSatelliteTable(satellites) {
+            const tbody = document.getElementById('satelliteTableBody');
+            tbody.innerHTML = '';
+
+            satellites.forEach(satellite => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${satellite.id}</td>
+                    <td>${satellite.name}</td>
+                    <td>${satellite.type}</td>
+                    <td>${satellite.launchTime}</td>
+                    <td>${satellite.orbit}</td>
+                    <td><span class="badge bg-${satellite.status === '在线' ? 'success' : 'secondary'}">${satellite.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editSatellite('${satellite.id}')">
+                            <i class="fas fa-edit"></i> 修改
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSatellite('${satellite.id}')">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 表单验证
+        function setupFormValidation() {
+            const form = document.getElementById('satelliteForm');
+            const satelliteIdInput = document.getElementById('satelliteId');
+
+            satelliteIdInput.addEventListener('input', function() {
+                const value = this.value;
+                if (!validateSatelliteId(value)) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                    // 检查唯一性
+                    const exists = db.getSatellites().some(s => s.id === value);
+                    if (exists) {
+                        this.classList.add('is-invalid');
+                        this.nextElementSibling.textContent = '该卫星编号已存在';
+                    } else {
+                        this.classList.remove('is-invalid');
+                    }
+                }
+            });
+
+            document.getElementById('satelliteName').addEventListener('input', function() {
+                if (this.value.length > 20) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+            });
+
+            document.getElementById('orbit').addEventListener('input', function() {
+                if (this.value.length > 50) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+            });
+
+            document.getElementById('launchTime').addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                const today = new Date();
+                if (selectedDate > today) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (form.checkValidity() && !satelliteIdInput.classList.contains('is-invalid')) {
+                    addSatellite();
+                } else {
+                    form.classList.add('was-validated');
+                }
+            });
+        }
+
+        // 添加卫星
+        function addSatellite() {
+            const satellite = {
+                id: document.getElementById('satelliteId').value,
+                name: document.getElementById('satelliteName').value,
+                type: document.getElementById('satelliteType').value,
+                launchTime: document.getElementById('launchTime').value,
+                orbit: document.getElementById('orbit').value,
+                status: document.getElementById('status').value,
+                uplinkFreq: document.getElementById('uplinkFreq').value,
+                downlinkFreq: document.getElementById('downlinkFreq').value,
+                payload: document.getElementById('payload').value
+            };
+
+            db.saveSatellite(satellite);
+            showAlert('新增成功');
+            resetForm();
+            loadSatellites();
+        }
+
+        // 重置表单
+        function resetForm() {
+            document.getElementById('satelliteForm').reset();
+            document.getElementById('satelliteForm').classList.remove('was-validated');
+        }
+
+        // 查询卫星
+        function searchSatellites() {
+            const searchId = document.getElementById('searchId').value.toLowerCase();
+            const searchName = document.getElementById('searchName').value.toLowerCase();
+            const searchType = document.getElementById('searchType').value;
+
+            const filtered = currentSatellites.filter(satellite => {
+                return (!searchId || satellite.id.toLowerCase().includes(searchId)) &&
+                       (!searchName || satellite.name.toLowerCase().includes(searchName)) &&
+                       (!searchType || satellite.type === searchType);
+            });
+
+            renderSatelliteTable(filtered);
+        }
+
+        // 重置查询
+        function resetSearch() {
+            document.getElementById('searchId').value = '';
+            document.getElementById('searchName').value = '';
+            document.getElementById('searchType').value = '';
+            renderSatelliteTable(currentSatellites);
+        }
+
+        // 编辑卫星
+        function editSatellite(id) {
+            const satellite = db.getSatellites().find(s => s.id === id);
+            if (!satellite) return;
+
+            document.getElementById('editSatelliteId').value = satellite.id;
+            document.getElementById('editSatelliteIdDisplay').value = satellite.id;
+            document.getElementById('editSatelliteName').value = satellite.name;
+            document.getElementById('editSatelliteType').value = satellite.type;
+            document.getElementById('editLaunchTime').value = satellite.launchTime;
+            document.getElementById('editOrbit').value = satellite.orbit;
+            document.getElementById('editStatus').value = satellite.status;
+            document.getElementById('editUplinkFreq').value = satellite.uplinkFreq;
+            document.getElementById('editDownlinkFreq').value = satellite.downlinkFreq;
+            document.getElementById('editPayload').value = satellite.payload;
+
+            new bootstrap.Modal(document.getElementById('editModal')).show();
+        }
+
+        // 更新卫星
+        function updateSatellite() {
+            const form = document.getElementById('editForm');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+
+            const satellite = {
+                id: document.getElementById('editSatelliteId').value,
+                name: document.getElementById('editSatelliteName').value,
+                type: document.getElementById('editSatelliteType').value,
+                launchTime: document.getElementById('editLaunchTime').value,
+                orbit: document.getElementById('editOrbit').value,
+                status: document.getElementById('editStatus').value,
+                uplinkFreq: document.getElementById('editUplinkFreq').value,
+                downlinkFreq: document.getElementById('editDownlinkFreq').value,
+                payload: document.getElementById('editPayload').value
+            };
+
+            db.saveSatellite(satellite);
+            showAlert('修改成功');
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            loadSatellites();
+        }
+
+        // 删除卫星
+        function deleteSatellite(id) {
+            if (confirm(`确认删除【${id}】及所有关联数据？删除后不可恢复！`)) {
+                db.deleteSatellite(id);
+                showAlert('删除成功');
+                loadSatellites();
+            }
+        }
+    </script>
+</body>
+</html>
