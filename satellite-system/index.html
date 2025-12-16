@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卫星信息管理系统 - 登录</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        .login-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .login-logo {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .login-body {
+            padding: 30px;
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 2px solid #e8e8e8;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #1890ff;
+            box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: bold;
+            color: white;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(24, 144, 255, 0.4);
+        }
+        
+        .login-footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e8e8e8;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .login-tabs {
+            margin-bottom: 20px;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 10px;
+            padding: 10px 20px;
+            margin-right: 10px;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+            color: white;
+        }
+        
+        .demo-accounts {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .demo-accounts h6 {
+            margin-bottom: 10px;
+            color: #666;
+        }
+        
+        .demo-account {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        
+        .demo-account:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-satellite"></i>
+                </div>
+                <h2>卫星信息管理系统</h2>
+                <p>Satellite Information Management System</p>
+                <small>版本 1.0.0</small>
+                <div class="mt-2">
+                    <a class="btn btn-outline-light btn-sm" href="https://github.com/Ning123321-make/didactic-eureka/releases/download/satellite-system-v1.0.0/satellite-system.zip" target="_blank" rel="noopener">下载 ZIP</a>
+                    <small class="ms-2 text-white-50">SHA256: <code id="zipSha">sha256:9df2ed37893a8a68e229da89811e8003cc29863c7db36e6d72553cf73bbd5083</code> <button id="copySha" class="btn btn-sm btn-light">复制</button></small>
+                </div>
+            </div>
+            
+            <div class="login-body">
+                <div class="login-tabs">
+                    <ul class="nav nav-pills justify-content-center" id="loginTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#login" type="button" role="tab">
+                                <i class="fas fa-sign-in-alt me-2"></i>用户登录
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="register-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#register" type="button" role="tab">
+                                <i class="fas fa-user-plus me-2"></i>用户注册
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="tab-content" id="loginTabContent">
+                    <!-- 登录表单 -->
+                    <div class="tab-pane fade show active" id="login" role="tabpanel">
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-user me-2"></i>用户名
+                                </label>
+                                <input type="text" class="form-control" id="username" 
+                                       placeholder="请输入用户名" required>
+                                <div class="invalid-feedback">请输入用户名</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock me-2"></i>密码
+                                </label>
+                                <input type="password" class="form-control" id="password" 
+                                       placeholder="请输入密码" required>
+                                <div class="invalid-feedback">请输入密码</div>
+                            </div>
+                            
+                            <div class="mb-3 form-check d-flex justify-content-between">
+                                <div>
+                                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                                    <label class="form-check-label" for="rememberMe">记住我</label>
+                                </div>
+                                <a href="#" id="forgotPassword" class="text-primary">忘记密码？</a>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-login mb-3">
+                                <i class="fas fa-sign-in-alt me-2"></i>登录系统
+                            </button>
+                        </form>
+                        
+                        <div class="demo-accounts">
+                            <h6><i class="fas fa-info-circle me-2"></i>演示账号</h6>
+                            <div class="demo-account">
+                                <span>管理员</span>
+                                <code>admin / admin123</code>
+                            </div>
+                            <div class="demo-account">
+                                <span>操作员</span>
+                                <code>operator1 / 123456</code>
+                            </div>
+                            <div class="demo-account">
+                                <span>观察员</span>
+                                <code>viewer1 / 123456</code>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 注册表单 -->
+                    <div class="tab-pane fade" id="register" role="tabpanel">
+                        <form id="registerForm">
+                            <div class="mb-3">
+                                <label for="regUsername" class="form-label">用户名 *</label>
+                                <input type="text" class="form-control" id="regUsername" 
+                                       placeholder="4-20位字母数字" required pattern="^[a-zA-Z0-9]{4,20}$">
+                                <div class="invalid-feedback">用户名必须是4-20位字母数字</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="regPassword" class="form-label">密码 *</label>
+                                <input type="password" class="form-control" id="regPassword" 
+                                       placeholder="至少6位字符" required minlength="6">
+                                <div class="invalid-feedback">密码至少需要6位字符</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="regConfirmPassword" class="form-label">确认密码 *</label>
+                                <input type="password" class="form-control" id="regConfirmPassword" 
+                                       placeholder="再次输入密码" required>
+                                <div class="invalid-feedback">两次输入的密码不一致</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="regEmail" class="form-label">邮箱 *</label>
+                                <input type="email" class="form-control" id="regEmail" 
+                                       placeholder="example@domain.com" required>
+                                <div class="invalid-feedback">请输入有效的邮箱地址</div>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                                <label class="form-check-label" for="agreeTerms">
+                                    我同意 <a href="#" id="termsLink">用户协议</a>
+                                </label>
+                                <div class="invalid-feedback">请同意用户协议</div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-login">
+                                <i class="fas fa-user-plus me-2"></i>注册账号
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="login-footer">
+                <p>© 2023 卫星信息管理系统 v1.0.0</p>
+                <p>技术支持: 400-123-4567 | support@satellite.com</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 自定义脚本 -->
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // 初始化
+            Auth.init();
+            
+            // 表单提交
+            $('#loginForm').submit(function(e) {
+                e.preventDefault();
+                Auth.login();
+            });
+            
+            $('#registerForm').submit(function(e) {
+                e.preventDefault();
+                Auth.register();
+            });
+            
+            // 表单验证
+            $('#regConfirmPassword').on('input', function() {
+                const password = $('#regPassword').val();
+                const confirm = $(this).val();
+                
+                if (password !== confirm) {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid').addClass('is-valid');
+                }
+            });
+            
+            // 忘记密码
+            $('#forgotPassword').click(function(e) {
+                e.preventDefault();
+                Auth.forgotPassword();
+            });
+            
+            // 用户协议
+            $('#termsLink').click(function(e) {
+                e.preventDefault();
+                showTermsModal();
+            });
+            
+            // 自动填充演示账号
+            $('#username').on('focus', function() {
+                if (!$(this).val()) {
+                    $(this).val('operator1');
+                    $('#password').val('123456');
+                }
+            });
+
+            // 复制 SHA256 到剪贴板
+            $('#copySha').click(function() {
+                const txt = $('#zipSha').text().trim();
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(txt).then(() => {
+                        Auth.showSuccess('已复制 SHA256 到剪贴板');
+                    }).catch(() => {
+                        prompt('请手动复制 SHA256', txt);
+                    });
+                } else {
+                    prompt('请手动复制 SHA256', txt);
+                }
+            });
+        });
+        
+        function showTermsModal() {
+            const terms = `
+                <h4>用户协议</h4>
+                <p>欢迎使用卫星信息管理系统！请仔细阅读以下协议：</p>
+                <ul>
+                    <li>本系统用于管理、监控和控制卫星</li>
+                    <li>用户必须遵守国家法律法规</li>
+                    <li>系统数据仅供演示使用</li>
+                    <li>技术支持：support@satellite.com</li>
+                </ul>
+            `;
+            
+            alert(terms);
+        }
+    </script>
+</body>
+</html>
