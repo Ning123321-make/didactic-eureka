@@ -308,14 +308,9 @@
             const startTimeStr = formatDateTime(thirtyMinutesAgo);
             const endTimeStr = formatDateTime(now);
 
-            console.log('Querying telemetry history:', currentSatelliteId, startTimeStr, endTimeStr);
-
             const history = db.getTelemetryHistory(currentSatelliteId, startTimeStr, endTimeStr);
 
-            console.log('Retrieved history data:', history.length, 'records');
-
             if (history.length === 0) {
-                console.log('No historical data found for chart, clearing chart');
                 trendChart.setOption({ series: [] });
                 return;
             }
@@ -323,8 +318,6 @@
             const times = history.map(h => h.timestamp.split(' ')[1]); // 只显示时间
             const temperatures = history.map(h => h.temperature);
             const batteries = history.map(h => h.battery);
-
-            console.log('Chart data - times:', times.length, 'temperatures:', temperatures.length, 'batteries:', batteries.length);
 
             const option = {
                 tooltip: {
